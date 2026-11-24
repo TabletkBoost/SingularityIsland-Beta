@@ -10,9 +10,8 @@ jobs:
       - name: Install Theos
         run: |
           git clone --recursive https://github.com/theos/theos.git ~/theos
-          curl -LO https://github.com/theos/sdks/archive/master.zip
-          unzip master.zip
-          mv sdks-master/*.sdk ~/theos/sdks/
+          git clone --depth=1 https://github.com/theos/sdks.git ~/theos-sdks
+          mv ~/theos-sdks/*.sdk ~/theos/sdks/
 
       - name: Build DEB
         env:
