@@ -7,20 +7,23 @@ on:
 
 jobs:
   build:
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Install Theos dependencies
-        run: brew install ldid xz dpkg
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y fakeroot git perl curl build-essential zip unzip libz-dev
 
-      - name: Install Theos and patched iOS SDKs
+      - name: Install Theos, Toolchain and iOS SDKs
         run: |
           git clone --recursive https://github.com/theos/theos.git "$HOME/theos"
-          curl -L https://github.com/theos/sdks/archive/refs/heads/master.tar.gz -o /tmp/sdks.tar.gz
-          tar -xzf /tmp/sdks.tar.gz -C /tmp
-          cp -r /tmp/sdks-master/iPhoneOS15.*.sdk "$HOME/theos/sdks/" 2>/dev/null || cp -r /tmp/sdks-master/iPhoneOS16.*.sdk "$HOME/theos/sdks/"
+          curl -LO https://github.com/sbingner/llvm-project/releases/download/v10.0.0-1/linux-ios-arm64e-clang-toolchain.tar.lzma
+          tar -xaf linux-ios-arm64e-clang-toolchain.tar.lzma -C "$HOME/theos/toolchain/"
+          git clone --depth=1 https://github.com/theos/sdks.git /tmp/sdks
+          cp -r /tmp/sdks/*.sdk "$HOME/theos/sdks/"
           echo "THEOS=$HOME/theos" >> "$GITHUB_ENV"
 
       - name: Build rootless .deb
